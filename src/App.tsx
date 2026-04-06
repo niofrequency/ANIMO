@@ -52,6 +52,16 @@ export default function App() {
 
   const collectionProgress = (collection.length / 150) * 100;
 
+  // Pre-defined zig-zag walking path (left foot, right foot alternating upwards)
+  const walkingPath = [
+    { x: -25, y: 40, rotation: -20 },
+    { x: 25, y: 20, rotation: 20 },
+    { x: -20, y: -10, rotation: -15 },
+    { x: 20, y: -30, rotation: 15 },
+    { x: -15, y: -60, rotation: -10 },
+    { x: 15, y: -80, rotation: 10 },
+  ];
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-orange-500 selection:text-slate-900">
       {/* Background Ambience */}
@@ -109,43 +119,34 @@ export default function App() {
                   <div className="relative">
                     <CameraView onCapture={handleCapture} isProcessing={isProcessing} />
                     
-                    {/* Fixed Continuous Walking Paw Processing Overlay */}
+                    {/* Slow, Zig-Zag Walking Paw Processing Overlay */}
                     {isProcessing && (
-                      <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/85 backdrop-blur-sm rounded-3xl border border-orange-500/30">
-                        <div className="relative w-32 h-32">
-                          {Array.from({ length: 8 }).map((_, i) => {
-                            const angle = (i * 45) * (Math.PI / 180);
-                            const radius = 45;
-                            const x = Math.cos(angle) * radius;
-                            const y = Math.sin(angle) * radius;
-                            const rotation = (i * 45) + 90;
-
-                            return (
-                              <div
-                                key={i}
-                                className="absolute left-1/2 top-1/2 -ml-4 -mt-4"
-                                style={{
-                                  transform: `translate(${x}px, ${y}px) rotate(${rotation}deg)`,
-                                }}
+                      <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/85 backdrop-blur-sm rounded-3xl border border-orange-500/30 overflow-hidden">
+                        <div className="relative w-32 h-32 mt-12">
+                          {walkingPath.map((step, i) => (
+                            <div
+                              key={i}
+                              className="absolute left-1/2 top-1/2 -ml-4 -mt-4"
+                              style={{
+                                transform: `translate(${step.x}px, ${step.y}px) rotate(${step.rotation}deg)`,
+                              }}
+                            >
+                              <div 
+                                className="animate-paw-fade opacity-0"
+                                style={{ animationDelay: `${i * 0.4}s` }}
                               >
-                                {/* The animation is now on the inner div so transforms don't clash */}
-                                <div 
-                                  className="animate-paw-fade opacity-0"
-                                  style={{ animationDelay: `${i * 0.15}s` }}
-                                >
-                                  <PawPrint className="w-8 h-8 text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]" />
-                                </div>
+                                <PawPrint className="w-8 h-8 text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]" />
                               </div>
-                            );
-                          })}
+                            </div>
+                          ))}
                         </div>
                         <motion.div
                           animate={{ opacity: [0.4, 1, 0.4] }}
-                          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                          className="mt-10 flex flex-col items-center gap-1"
+                          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                          className="mt-6 flex flex-col items-center gap-1 z-10"
                         >
-                          <p className="text-orange-500 font-bold uppercase tracking-[0.3em] text-sm">Scanning</p>
-                          <p className="text-slate-400 text-xs">Identifying species data...</p>
+                          <p className="text-orange-500 font-bold uppercase tracking-[0.3em] text-sm">Tracking</p>
+                          <p className="text-slate-400 text-xs">Following biological trail...</p>
                         </motion.div>
                       </div>
                     )}
@@ -273,14 +274,14 @@ export default function App() {
 
       <style>{`
         @keyframes pawFade {
-          0% { opacity: 0; transform: scale(0.8); }
-          20% { opacity: 1; transform: scale(1.1); }
-          50% { opacity: 0; transform: scale(0.8); }
+          0% { opacity: 0; transform: scale(0.8) translateY(10px); }
+          15% { opacity: 1; transform: scale(1.1) translateY(0); }
+          40% { opacity: 0; transform: scale(0.9) translateY(-10px); }
           100% { opacity: 0; transform: scale(0.8); }
         }
         .animate-paw-fade {
-          /* 1.2s total duration matches perfectly with 8 paws * 0.15s delay */
-          animation: pawFade 1.2s infinite ease-in-out;
+          /* 2.4s total duration matches perfectly with 6 paws * 0.4s delay */
+          animation: pawFade 2.4s infinite ease-in-out;
         }
         @keyframes scan {
           0% { transform: translateY(-100%); }
@@ -288,9 +289,6 @@ export default function App() {
         }
         .animate-scan {
           animation: scan 3s linear infinite;
-        }
-        .animate-ping-slow {
-          animation: ping 3s cubic-bezier(0, 0, 0.2, 1) infinite;
         }
       `}</style>
     </div>
