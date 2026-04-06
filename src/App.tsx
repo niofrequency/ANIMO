@@ -105,7 +105,46 @@ export default function App() {
                     <h2 className="text-3xl font-black text-white tracking-tight uppercase">Identify Life</h2>
                     <p className="text-slate-400 text-sm">Point your scanner at any creature to begin analysis.</p>
                   </div>
-                  <CameraView onCapture={handleCapture} isProcessing={isProcessing} />
+                  
+                  <div className="relative">
+                    <CameraView onCapture={handleCapture} isProcessing={isProcessing} />
+                    
+                    {/* New Walking Paw Processing Overlay */}
+                    {isProcessing && (
+                      <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/85 backdrop-blur-sm rounded-3xl border border-orange-500/30">
+                        <div className="relative w-32 h-32">
+                          {Array.from({ length: 8 }).map((_, i) => {
+                            const angle = (i * 45) * (Math.PI / 180);
+                            const radius = 45;
+                            const x = Math.cos(angle) * radius;
+                            const y = Math.sin(angle) * radius;
+                            const rotation = (i * 45) + 90;
+
+                            return (
+                              <div
+                                key={i}
+                                className="absolute left-1/2 top-1/2 -ml-4 -mt-4 animate-paw-fade"
+                                style={{
+                                  transform: `translate(${x}px, ${y}px) rotate(${rotation}deg)`,
+                                  animationDelay: `${i * 0.15}s`
+                                }}
+                              >
+                                <PawPrint className="w-8 h-8 text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]" />
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <motion.div
+                          animate={{ opacity: [0.4, 1, 0.4] }}
+                          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                          className="mt-10 flex flex-col items-center gap-1"
+                        >
+                          <p className="text-orange-500 font-bold uppercase tracking-[0.3em] text-sm">Scanning</p>
+                          <p className="text-slate-400 text-xs">Identifying species data...</p>
+                        </motion.div>
+                      </div>
+                    )}
+                  </div>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800 flex items-center gap-3">
@@ -161,7 +200,7 @@ export default function App() {
                   <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">No entries found in database</p>
                   <button 
                     onClick={() => setView('scan')}
-                    className="px-6 py-3 bg-orange-500 text-slate-900 font-bold rounded-xl"
+                    className="px-6 py-3 bg-orange-500 text-slate-900 font-bold rounded-xl hover:bg-orange-400 transition-colors"
                   >
                     START SCANNING
                   </button>
@@ -228,6 +267,13 @@ export default function App() {
       </nav>
 
       <style>{`
+        @keyframes pawFade {
+          0%, 100% { opacity: 0.1; transform: scale(0.8); }
+          50% { opacity: 1; transform: scale(1.1); }
+        }
+        .animate-paw-fade {
+          animation: pawFade 1.2s infinite ease-in-out;
+        }
         @keyframes scan {
           0% { transform: translateY(-100%); }
           100% { transform: translateY(100%); }
