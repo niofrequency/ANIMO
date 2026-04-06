@@ -16,7 +16,7 @@ export async function identifyCreature(base64Image: string): Promise<CreatureInf
             },
           },
           {
-            text: "Identify this creature and provide detailed information in JSON format. Include common name, scientific name, rarity (COMMON, UNCOMMON, RARE, EPIC, LEGENDARY), a short fun fact description, habitat, diet, dangerLevel (Low, Medium, High), combat stats (aggression, camouflage, speed, defense from 1-10). IMPORTANT: For videos, provide 2 DIRECT YouTube video URLs (e.g., https://www.youtube.com/watch?v=...) about this creature and their exact titles. Do not use search query links. Return ONLY the JSON.",
+            text: "Identify this creature and provide detailed information in JSON format. Include common name, scientific name, rarity (COMMON, UNCOMMON, RARE, EPIC, LEGENDARY), habitat, diet, dangerLevel (Low, Medium, High), combat stats (aggression, camouflage, speed, defense from 1-10). IMPORTANT FOR DESCRIPTION: Write a detailed field note that includes 1 highly specific fun fact and 2-3 interesting ecological details. Keep it engaging. IMPORTANT FOR VIDEOS: provide 2 DIRECT YouTube video URLs (e.g., https://www.youtube.com/watch?v=...) about this creature and their exact titles. Do not use search query links. Return ONLY the JSON.",
           },
         ],
       },
@@ -62,19 +62,16 @@ export async function identifyCreature(base64Image: string): Promise<CreatureInf
   const text = response.text;
   if (!text) throw new Error("Failed to identify creature");
   
-  // 1. SCRUB THE TEXT: Remove markdown formatting if Gemini accidentally includes it
   const cleanText = text.replace(/```json/gi, '').replace(/```/gi, '').trim();
   
   let data;
   try {
-    // 2. PARSE SAFELY
     data = JSON.parse(cleanText);
   } catch (e) {
     console.error("Failed to parse JSON from Gemini:", cleanText);
     throw new Error("Invalid response format from AI");
   }
   
-  // 3. Fallback just in case Gemini STILL returns a search string instead of a raw link
   if (data.videos) {
     data.videos = data.videos.map((v: any) => ({
       ...v,
