@@ -15,7 +15,8 @@ export interface CreatureInfo {
   commonName: string;
   scientificName: string;
   rarity: 'COMMON' | 'UNCOMMON' | 'RARE' | 'EPIC' | 'LEGENDARY';
-  description: string;
+  description: string; // Used for basic details
+  funFact?: string;    // Added for the new fun fact feature
   habitat?: string;
   diet?: string;
   dangerLevel?: string;
