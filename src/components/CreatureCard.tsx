@@ -119,10 +119,19 @@ export function CreatureCard({ creature, imageUrl }: CreatureCardProps) {
 
         <div className="bg-slate-800/50 rounded-2xl p-4 border border-slate-700 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-1 h-full bg-orange-500" />
-          <p className="text-slate-300 text-sm leading-relaxed">
-            <span className="text-orange-400 font-bold block mb-1 uppercase tracking-wider text-xs">Field Notes</span> 
-            {creature.description}
-          </p>
+          <div className="space-y-3">
+            <p className="text-slate-300 text-sm leading-relaxed">
+              <span className="text-orange-400 font-bold block mb-1 uppercase tracking-wider text-xs">Field Notes</span> 
+              {creature.description}
+            </p>
+            {/* New Fun Fact Section */}
+            {creature.funFact && (
+              <p className="text-slate-300 text-sm leading-relaxed italic border-t border-slate-700/50 pt-2 mt-2">
+                <span className="text-orange-400 font-bold not-italic">Fun Fact: </span> 
+                {creature.funFact}
+              </p>
+            )}
+          </div>
         </div>
 
         <div className="flex flex-col gap-6 bg-slate-950/50 rounded-2xl p-6 border border-slate-800">
