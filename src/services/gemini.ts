@@ -16,7 +16,7 @@ export async function identifyCreature(base64Image: string): Promise<CreatureInf
             },
           },
           {
-            text: "Identify this creature and provide detailed information in JSON format. Include common name, scientific name, rarity (COMMON, UNCOMMON, RARE, EPIC, LEGENDARY), habitat, diet, dangerLevel (Low, Medium, High), combat stats (aggression, camouflage, speed, defense from 1-10). IMPORTANT FOR DESCRIPTION: Write a detailed field note that includes 1 highly specific fun fact and 2-3 interesting ecological details. Keep it engaging. IMPORTANT FOR VIDEOS: provide 2 DIRECT YouTube video URLs (e.g., https://www.youtube.com/watch?v=...) about this creature and their exact titles. Do not use search query links. Return ONLY the JSON.",
+            text: "Identify this creature and provide detailed information in JSON format. Include common name, scientific name, rarity (COMMON, UNCOMMON, RARE, EPIC, LEGENDARY), habitat, diet, dangerLevel (Low, Medium, High), combat stats (aggression, camouflage, speed, defense from 1-10). IMPORTANT FOR DESCRIPTION: Provide basic ecological details in the 'description' field. Provide 1 highly specific, interesting fun fact in the 'funFact' field. IMPORTANT FOR VIDEOS: provide 2 DIRECT YouTube video URLs (e.g., https://www.youtube.com/watch?v=...) about this creature and their exact titles. Do not use search query links. Return ONLY the JSON.",
           },
         ],
       },
@@ -29,7 +29,8 @@ export async function identifyCreature(base64Image: string): Promise<CreatureInf
           commonName: { type: Type.STRING },
           scientificName: { type: Type.STRING },
           rarity: { type: Type.STRING, enum: ["COMMON", "UNCOMMON", "RARE", "EPIC", "LEGENDARY"] },
-          description: { type: Type.STRING },
+          description: { type: Type.STRING, description: "Basic details about the creature" },
+          funFact: { type: Type.STRING, description: "A highly specific and interesting fun fact" },
           habitat: { type: Type.STRING },
           diet: { type: Type.STRING },
           dangerLevel: { type: Type.STRING, enum: ["Low", "Medium", "High"] },
@@ -54,7 +55,7 @@ export async function identifyCreature(base64Image: string): Promise<CreatureInf
             },
           },
         },
-        required: ["commonName", "scientificName", "rarity", "description", "habitat", "diet", "dangerLevel", "stats", "videos"],
+        required: ["commonName", "scientificName", "rarity", "description", "funFact", "habitat", "diet", "dangerLevel", "stats", "videos"],
       },
     },
   });
