@@ -109,7 +109,7 @@ export default function App() {
                   <div className="relative">
                     <CameraView onCapture={handleCapture} isProcessing={isProcessing} />
                     
-                    {/* New Walking Paw Processing Overlay */}
+                    {/* Fixed Continuous Walking Paw Processing Overlay */}
                     {isProcessing && (
                       <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/85 backdrop-blur-sm rounded-3xl border border-orange-500/30">
                         <div className="relative w-32 h-32">
@@ -123,13 +123,18 @@ export default function App() {
                             return (
                               <div
                                 key={i}
-                                className="absolute left-1/2 top-1/2 -ml-4 -mt-4 animate-paw-fade"
+                                className="absolute left-1/2 top-1/2 -ml-4 -mt-4"
                                 style={{
                                   transform: `translate(${x}px, ${y}px) rotate(${rotation}deg)`,
-                                  animationDelay: `${i * 0.15}s`
                                 }}
                               >
-                                <PawPrint className="w-8 h-8 text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]" />
+                                {/* The animation is now on the inner div so transforms don't clash */}
+                                <div 
+                                  className="animate-paw-fade opacity-0"
+                                  style={{ animationDelay: `${i * 0.15}s` }}
+                                >
+                                  <PawPrint className="w-8 h-8 text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]" />
+                                </div>
                               </div>
                             );
                           })}
@@ -268,10 +273,13 @@ export default function App() {
 
       <style>{`
         @keyframes pawFade {
-          0%, 100% { opacity: 0.1; transform: scale(0.8); }
-          50% { opacity: 1; transform: scale(1.1); }
+          0% { opacity: 0; transform: scale(0.8); }
+          20% { opacity: 1; transform: scale(1.1); }
+          50% { opacity: 0; transform: scale(0.8); }
+          100% { opacity: 0; transform: scale(0.8); }
         }
         .animate-paw-fade {
+          /* 1.2s total duration matches perfectly with 8 paws * 0.15s delay */
           animation: pawFade 1.2s infinite ease-in-out;
         }
         @keyframes scan {
