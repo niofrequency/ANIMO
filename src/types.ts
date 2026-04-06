@@ -16,6 +16,9 @@ export interface CreatureInfo {
   scientificName: string;
   rarity: 'COMMON' | 'UNCOMMON' | 'RARE' | 'EPIC' | 'LEGENDARY';
   description: string;
+  habitat?: string;
+  diet?: string;
+  dangerLevel?: string;
   stats: CreatureStats;
   videos: YouTubeVideo[];
 }
