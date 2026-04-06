@@ -35,6 +35,9 @@ export default function App() {
   };
 
   const handleCapture = async (base64: string) => {
+    // THE GUARD: If already processing, ignore any extra button taps!
+    if (isProcessing) return;
+
     setIsProcessing(true);
     try {
       const info = await identifyCreature(base64);
