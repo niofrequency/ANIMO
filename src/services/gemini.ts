@@ -16,7 +16,7 @@ export async function identifyCreature(base64Image: string): Promise<CreatureInf
             },
           },
           {
-            text: "Identify this creature and provide detailed information in JSON format. Include common name, scientific name, rarity (COMMON, UNCOMMON, RARE, EPIC, LEGENDARY), a short fun fact description, habitat, diet, dangerLevel (Low, Medium, High), combat stats (aggression, camouflage, speed, defense from 1-10), and 2 relevant YouTube video titles and search queries for them. Return ONLY the JSON.",
+            text: "Identify this creature and provide detailed information in JSON format. Include common name, scientific name, rarity (COMMON, UNCOMMON, RARE, EPIC, LEGENDARY), a short fun fact description, habitat, diet, dangerLevel (Low, Medium, High), combat stats (aggression, camouflage, speed, defense from 1-10). IMPORTANT: For videos, provide 2 DIRECT YouTube video URLs (e.g., https://www.youtube.com/watch?v=...) about this creature and their exact titles. Do not use search query links. Return ONLY the JSON.",
           },
         ],
       },
@@ -49,8 +49,7 @@ export async function identifyCreature(base64Image: string): Promise<CreatureInf
               type: Type.OBJECT,
               properties: {
                 title: { type: Type.STRING },
-                thumbnail: { type: Type.STRING, description: "A placeholder thumbnail URL or keyword for search" },
-                url: { type: Type.STRING, description: "A search URL for YouTube" },
+                url: { type: Type.STRING, description: "A direct youtube watch URL" },
               },
             },
           },
@@ -63,14 +62,25 @@ export async function identifyCreature(base64Image: string): Promise<CreatureInf
   const text = response.text;
   if (!text) throw new Error("Failed to identify creature");
   
-  const data = JSON.parse(text);
+  // 1. SCRUB THE TEXT: Remove markdown formatting if Gemini accidentally includes it
+  const cleanText = text.replace(/```json/gi, '').replace(/```/gi, '').trim();
   
-  // Enhance video data with real-looking links if they are just search terms
-  data.videos = data.videos.map((v: any) => ({
-    ...v,
-    url: v.url.startsWith('http') ? v.url : `https://www.youtube.com/results?search_query=${encodeURIComponent(v.title)}`,
-    thumbnail: `https://picsum.photos/seed/${encodeURIComponent(v.title)}/320/180`
-  }));
+  let data;
+  try {
+    // 2. PARSE SAFELY
+    data = JSON.parse(cleanText);
+  } catch (e) {
+    console.error("Failed to parse JSON from Gemini:", cleanText);
+    throw new Error("Invalid response format from AI");
+  }
+  
+  // 3. Fallback just in case Gemini STILL returns a search string instead of a raw link
+  if (data.videos) {
+    data.videos = data.videos.map((v: any) => ({
+      ...v,
+      url: v.url.startsWith('http') ? v.url : `https://www.youtube.com/results?search_query=${encodeURIComponent(v.title)}`
+    }));
+  }
 
   return data as CreatureInfo;
 }
