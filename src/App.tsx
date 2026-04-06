@@ -36,7 +36,6 @@ export default function App() {
       localStorage.setItem('animo_collection', JSON.stringify(updated));
     } catch (e) {
       console.warn("Storage full! Couldn't save to Pedia, but scan successful.");
-      // If storage is full, we just skip saving to Pedia but keep showing the result.
     }
   };
 
@@ -79,7 +78,6 @@ export default function App() {
 
   const collectionProgress = (collection.length / 150) * 100;
 
-  // Added isLeft property to alternate the paw direction
   const walkingPath = [
     { x: -25, y: 40, rotation: -20, isLeft: true },
     { x: 25, y: 20, rotation: 20, isLeft: false },
@@ -91,11 +89,10 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-orange-500 selection:text-slate-900 pb-24">
-      {/* Hidden File Input accessible globally */}
+      {/* Hidden File Input - Removed capture="environment" so gallery works! */}
       <input 
         type="file" 
         accept="image/*" 
-        capture="environment" 
         ref={fileInputRef} 
         onChange={handleImageUpload}
         className="hidden" 
@@ -181,7 +178,6 @@ export default function App() {
                                 className="animate-paw-fade opacity-0"
                                 style={{ animationDelay: `${i * 0.4}s` }}
                               >
-                                {/* ScaleX(-1) flips the paw horizontally for the left foot */}
                                 <PawPrint 
                                   className="w-8 h-8 text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]" 
                                   style={{ transform: step.isLeft ? 'scaleX(-1)' : 'scaleX(1)' }}
@@ -221,7 +217,6 @@ export default function App() {
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {/* The redundant New Scan text button was removed from here to rely on the central FAB */}
                   <CreatureCard creature={currentCreature} imageUrl={currentImageUrl!} />
                 </div>
               )}
@@ -288,21 +283,20 @@ export default function App() {
         </AnimatePresence>
       </main>
 
-      {/* Navigation Bar - Redesigned with Central Scanner Button */}
-      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md bg-slate-900/90 backdrop-blur-xl border border-slate-700 rounded-3xl p-2 flex items-center justify-between px-6 shadow-2xl z-50">
+      {/* Navigation Bar - Fixed alignment so the button sits inline! */}
+      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md bg-slate-900/90 backdrop-blur-xl border border-slate-700 rounded-3xl p-3 flex items-center justify-between px-8 shadow-2xl z-50">
         
         {/* Left Nav Item */}
         <button
           onClick={() => {
              setView('scan');
-             // If we are already on scan view, just clear current creature to show empty state
              if (view === 'scan') {
                setCurrentCreature(null);
                setCurrentImageUrl(null);
              }
           }}
           className={cn(
-            "flex flex-col items-center gap-1 p-2 rounded-2xl transition-all",
+            "flex flex-col items-center gap-1 transition-all",
             view === 'scan' ? "text-orange-500" : "text-slate-500 hover:text-white"
           )}
         >
@@ -310,19 +304,19 @@ export default function App() {
           <span className="text-[10px] font-black uppercase tracking-tighter">View</span>
         </button>
         
-        {/* Central Scan Button - Triggers Camera/Gallery */}
+        {/* Central Scan Button - Now sits perfectly inline! */}
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="absolute left-1/2 -top-6 -translate-x-1/2 w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(249,115,22,0.4)] border-4 border-slate-950 active:scale-95 transition-transform"
+          className="w-14 h-14 bg-orange-500 rounded-2xl flex items-center justify-center shadow-[0_0_15px_rgba(249,115,22,0.4)] active:scale-95 transition-transform"
         >
-          <Camera className="w-6 h-6 text-slate-900 fill-slate-900" />
+          <Camera className="w-7 h-7 text-slate-900 fill-slate-900" />
         </button>
         
         {/* Right Nav Item */}
         <button
           onClick={() => setView('collection')}
           className={cn(
-            "flex flex-col items-center gap-1 p-2 rounded-2xl transition-all",
+            "flex flex-col items-center gap-1 transition-all",
             view === 'collection' ? "text-orange-500" : "text-slate-500 hover:text-white"
           )}
         >
