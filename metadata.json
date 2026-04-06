@@ -1,0 +1,7 @@
+{
+  "name": "ANIMO",
+  "description": "An AI-powered creature identification app with gamified stats and holographic visuals.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
