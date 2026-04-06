@@ -5,7 +5,7 @@ interface StatsChartProps {
   stats: CreatureStats;
 }
 
-// Custom Tooltip for the Radar Chart to match the UI theme
+// Custom Tooltip for the Radar Chart
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     return (
@@ -31,13 +31,13 @@ export function StatsChart({ stats }: StatsChartProps) {
   ];
 
   return (
-    <div className="w-full h-48 -ml-4"> {/* Slight negative margin to better center the chart in the grid */}
+    <div className="w-full h-56"> 
       <ResponsiveContainer width="100%" height="100%">
-        <RadarChart cx="50%" cy="50%" outerRadius="75%" data={data}>
+        <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
           <PolarGrid stroke="#fb923c" strokeOpacity={0.2} />
           <PolarAngleAxis 
             dataKey="subject" 
-            tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: 700 }} 
+            tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} 
           />
           <Tooltip content={<CustomTooltip />} />
           <Radar
