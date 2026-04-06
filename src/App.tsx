@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { PawPrint, Trophy, History, Scan, Info } from 'lucide-react';
-import { CameraView } from './components/CameraView';
+import { PawPrint, Trophy, History, Scan, Info, Camera } from 'lucide-react';
 import { CreatureCard } from './components/CreatureCard';
 import { CreatureInfo, CollectionItem } from './types';
 import { identifyCreature } from './services/gemini';
@@ -13,6 +12,8 @@ export default function App() {
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
   const [collection, setCollection] = useState<CollectionItem[]>([]);
   const [view, setView] = useState<'scan' | 'collection'>('scan');
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load collection from local storage
   useEffect(() => {
@@ -23,22 +24,45 @@ export default function App() {
   }, []);
 
   const saveToCollection = (creature: CreatureInfo, imageUrl: string) => {
-    const newItem: CollectionItem = {
-      id: crypto.randomUUID(),
-      creature,
-      capturedAt: new Date().toISOString(),
-      imageUrl,
+    try {
+      const newItem: CollectionItem = {
+        id: crypto.randomUUID(),
+        creature,
+        capturedAt: new Date().toISOString(),
+        imageUrl,
+      };
+      const updated = [newItem, ...collection];
+      setCollection(updated);
+      localStorage.setItem('animo_collection', JSON.stringify(updated));
+    } catch (e) {
+      console.warn("Storage full! Couldn't save to Pedia, but scan successful.");
+      // If storage is full, we just skip saving to Pedia but keep showing the result.
+    }
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = (reader.result as string).split(',')[1];
+      handleCapture(base64String);
     };
-    const updated = [newItem, ...collection];
-    setCollection(updated);
-    localStorage.setItem('animo_collection', JSON.stringify(updated));
+    reader.readAsDataURL(file);
+    
+    // Reset input so the same file can be selected again if needed
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleCapture = async (base64: string) => {
-    // THE GUARD: If already processing, ignore any extra button taps!
     if (isProcessing) return;
 
     setIsProcessing(true);
+    setView('scan'); // Force view to scan tab if they scan from pedia
+    
     try {
       const info = await identifyCreature(base64);
       const imageUrl = `data:image/jpeg;base64,${base64}`;
@@ -55,18 +79,28 @@ export default function App() {
 
   const collectionProgress = (collection.length / 150) * 100;
 
-  // Pre-defined zig-zag walking path (left foot, right foot alternating upwards)
+  // Added isLeft property to alternate the paw direction
   const walkingPath = [
-    { x: -25, y: 40, rotation: -20 },
-    { x: 25, y: 20, rotation: 20 },
-    { x: -20, y: -10, rotation: -15 },
-    { x: 20, y: -30, rotation: 15 },
-    { x: -15, y: -60, rotation: -10 },
-    { x: 15, y: -80, rotation: 10 },
+    { x: -25, y: 40, rotation: -20, isLeft: true },
+    { x: 25, y: 20, rotation: 20, isLeft: false },
+    { x: -20, y: -10, rotation: -15, isLeft: true },
+    { x: 20, y: -30, rotation: 15, isLeft: false },
+    { x: -15, y: -60, rotation: -10, isLeft: true },
+    { x: 15, y: -80, rotation: 10, isLeft: false },
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-orange-500 selection:text-slate-900">
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-orange-500 selection:text-slate-900 pb-24">
+      {/* Hidden File Input accessible globally */}
+      <input 
+        type="file" 
+        accept="image/*" 
+        capture="environment" 
+        ref={fileInputRef} 
+        onChange={handleImageUpload}
+        className="hidden" 
+      />
+
       {/* Background Ambience */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-orange-900/20 blur-[120px] rounded-full" />
@@ -102,7 +136,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className="max-w-md mx-auto p-4 pb-32">
+      <main className="max-w-md mx-auto p-4">
         <AnimatePresence mode="wait">
           {view === 'scan' ? (
             <motion.div
@@ -116,15 +150,24 @@ export default function App() {
                 <div className="space-y-6 pt-8">
                   <div className="text-center space-y-2">
                     <h2 className="text-3xl font-black text-white tracking-tight uppercase">Identify Life</h2>
-                    <p className="text-slate-400 text-sm">Point your scanner at any creature to begin analysis.</p>
+                    <p className="text-slate-400 text-sm">Tap the camera button below to scan a creature from your gallery or camera.</p>
                   </div>
                   
                   <div className="relative">
-                    <CameraView onCapture={handleCapture} isProcessing={isProcessing} />
+                    {/* Empty State Scanner UI */}
+                    <div 
+                      onClick={() => fileInputRef.current?.click()}
+                      className="aspect-square border-2 border-dashed border-slate-700 rounded-3xl flex flex-col items-center justify-center bg-slate-900/50 cursor-pointer hover:border-orange-500/50 transition-colors group"
+                    >
+                      <div className="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Camera className="w-10 h-10 text-orange-500" />
+                      </div>
+                      <p className="mt-4 text-slate-400 font-bold uppercase tracking-widest text-xs">Tap to Upload Photo</p>
+                    </div>
                     
                     {/* Slow, Zig-Zag Walking Paw Processing Overlay */}
                     {isProcessing && (
-                      <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/85 backdrop-blur-sm rounded-3xl border border-orange-500/30 overflow-hidden">
+                      <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/90 backdrop-blur-md rounded-3xl border border-orange-500/30 overflow-hidden">
                         <div className="relative w-32 h-32 mt-12">
                           {walkingPath.map((step, i) => (
                             <div
@@ -138,7 +181,11 @@ export default function App() {
                                 className="animate-paw-fade opacity-0"
                                 style={{ animationDelay: `${i * 0.4}s` }}
                               >
-                                <PawPrint className="w-8 h-8 text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]" />
+                                {/* ScaleX(-1) flips the paw horizontally for the left foot */}
+                                <PawPrint 
+                                  className="w-8 h-8 text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]" 
+                                  style={{ transform: step.isLeft ? 'scaleX(-1)' : 'scaleX(1)' }}
+                                />
                               </div>
                             </div>
                           ))}
@@ -174,16 +221,7 @@ export default function App() {
                 </div>
               ) : (
                 <div className="space-y-6">
-                  <button 
-                    onClick={() => {
-                      setCurrentCreature(null);
-                      setCurrentImageUrl(null);
-                    }}
-                    className="flex items-center gap-2 text-slate-400 hover:text-orange-400 transition-colors text-sm font-bold"
-                  >
-                    <Scan className="w-4 h-4" />
-                    NEW SCAN
-                  </button>
+                  {/* The redundant New Scan text button was removed from here to rely on the central FAB */}
                   <CreatureCard creature={currentCreature} imageUrl={currentImageUrl!} />
                 </div>
               )}
@@ -208,7 +246,7 @@ export default function App() {
                   </div>
                   <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">No entries found in database</p>
                   <button 
-                    onClick={() => setView('scan')}
+                    onClick={() => fileInputRef.current?.click()}
                     className="px-6 py-3 bg-orange-500 text-slate-900 font-bold rounded-xl hover:bg-orange-400 transition-colors"
                   >
                     START SCANNING
@@ -250,24 +288,42 @@ export default function App() {
         </AnimatePresence>
       </main>
 
-      {/* Navigation Bar */}
-      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md bg-slate-900/90 backdrop-blur-xl border border-slate-700 rounded-3xl p-2 flex items-center justify-around shadow-2xl z-50">
+      {/* Navigation Bar - Redesigned with Central Scanner Button */}
+      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md bg-slate-900/90 backdrop-blur-xl border border-slate-700 rounded-3xl p-2 flex items-center justify-between px-6 shadow-2xl z-50">
+        
+        {/* Left Nav Item */}
         <button
-          onClick={() => setView('scan')}
+          onClick={() => {
+             setView('scan');
+             // If we are already on scan view, just clear current creature to show empty state
+             if (view === 'scan') {
+               setCurrentCreature(null);
+               setCurrentImageUrl(null);
+             }
+          }}
           className={cn(
-            "flex flex-col items-center gap-1 px-6 py-2 rounded-2xl transition-all",
-            view === 'scan' ? "bg-orange-500 text-slate-900" : "text-slate-400 hover:text-white"
+            "flex flex-col items-center gap-1 p-2 rounded-2xl transition-all",
+            view === 'scan' ? "text-orange-500" : "text-slate-500 hover:text-white"
           )}
         >
           <Scan className="w-6 h-6" />
-          <span className="text-[10px] font-black uppercase tracking-tighter">Scanner</span>
+          <span className="text-[10px] font-black uppercase tracking-tighter">View</span>
         </button>
         
+        {/* Central Scan Button - Triggers Camera/Gallery */}
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className="absolute left-1/2 -top-6 -translate-x-1/2 w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(249,115,22,0.4)] border-4 border-slate-950 active:scale-95 transition-transform"
+        >
+          <Camera className="w-6 h-6 text-slate-900 fill-slate-900" />
+        </button>
+        
+        {/* Right Nav Item */}
         <button
           onClick={() => setView('collection')}
           className={cn(
-            "flex flex-col items-center gap-1 px-6 py-2 rounded-2xl transition-all",
-            view === 'collection' ? "bg-orange-500 text-slate-900" : "text-slate-400 hover:text-white"
+            "flex flex-col items-center gap-1 p-2 rounded-2xl transition-all",
+            view === 'collection' ? "text-orange-500" : "text-slate-500 hover:text-white"
           )}
         >
           <History className="w-6 h-6" />
@@ -283,15 +339,7 @@ export default function App() {
           100% { opacity: 0; transform: scale(0.8); }
         }
         .animate-paw-fade {
-          /* 2.4s total duration matches perfectly with 6 paws * 0.4s delay */
           animation: pawFade 2.4s infinite ease-in-out;
-        }
-        @keyframes scan {
-          0% { transform: translateY(-100%); }
-          100% { transform: translateY(100%); }
-        }
-        .animate-scan {
-          animation: scan 3s linear infinite;
         }
       `}</style>
     </div>
