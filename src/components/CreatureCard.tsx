@@ -19,18 +19,25 @@ const rarityColors = {
 
 // Helper function to extract YouTube ID and get the official thumbnail
 const getYouTubeThumbnail = (url: string) => {
+  if (!url) return null;
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
   const match = url.match(regExp);
   const videoId = (match && match[2].length === 11) ? match[2] : null;
   
   if (videoId) {
-    // hqdefault is highly reliable across almost all YouTube videos
     return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
   }
-  return null; // Fallback if not a valid YT link
+  return null; 
 };
 
 export function CreatureCard({ creature, imageUrl }: CreatureCardProps) {
+  
+  const handleARClick = () => {
+    // In a real native app, this would trigger ARKit/ARCore.
+    // For web, this would trigger <model-viewer> or WebXR.
+    alert("AR View coming soon! This feature requires a 3D model of the creature and WebXR support.");
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -59,7 +66,7 @@ export function CreatureCard({ creature, imageUrl }: CreatureCardProps) {
             <img
               src={imageUrl}
               alt={creature.commonName}
-              className="w-48 h-48 object-contain rounded-full border-4 border-orange-400/30 shadow-[0_0_50px_rgba(249,115,22,0.3)] bg-slate-950/50"
+              className="w-48 h-48 object-cover rounded-full border-4 border-orange-400/30 shadow-[0_0_50px_rgba(249,115,22,0.3)] bg-slate-950/50"
               referrerPolicy="no-referrer"
             />
             {/* Holographic Scan Lines Effect */}
@@ -100,7 +107,7 @@ export function CreatureCard({ creature, imageUrl }: CreatureCardProps) {
           </span>
         </div>
 
-        {/* New Ecology Info Grid */}
+        {/* Ecology Info Grid */}
         <div className="grid grid-cols-3 gap-2">
           <div className="bg-slate-800/50 rounded-xl p-3 border border-slate-700/50 flex flex-col items-center justify-center text-center gap-1">
             <MapPin className="w-4 h-4 text-emerald-400" />
@@ -127,14 +134,17 @@ export function CreatureCard({ creature, imageUrl }: CreatureCardProps) {
           </p>
         </div>
 
-        {/* Stats Section */}
-        <div className="grid grid-cols-2 gap-4 items-center bg-slate-950/50 rounded-2xl p-4 border border-slate-800">
+        {/* Stats Section - MOVED TO VERTICAL LAYOUT */}
+        <div className="flex flex-col gap-6 bg-slate-950/50 rounded-2xl p-6 border border-slate-800">
+          {/* Chart takes top area full width */}
           <StatsChart stats={creature.stats} />
-          <div className="space-y-3">
+          
+          {/* Stats below the chart */}
+          <div className="grid grid-cols-2 gap-y-4 gap-x-2">
             <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
               <Target className="w-4 h-4 text-red-400" />
               <div className="flex-1 flex justify-between">
-                <span>AGGRESSION</span>
+                <span>AGGRO</span>
                 <span className="text-white">{creature.stats.aggression}/10</span>
               </div>
             </div>
@@ -170,8 +180,7 @@ export function CreatureCard({ creature, imageUrl }: CreatureCardProps) {
             </h3>
             <div className="grid grid-cols-2 gap-3">
               {creature.videos.map((video, idx) => {
-                // Use our new helper function or fallback to whatever was provided
-                const actualThumbnail = getYouTubeThumbnail(video.url) || video.thumbnail;
+                const actualThumbnail = getYouTubeThumbnail(video.url);
                 
                 return (
                   <a
@@ -179,14 +188,21 @@ export function CreatureCard({ creature, imageUrl }: CreatureCardProps) {
                     href={video.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group relative aspect-video rounded-xl overflow-hidden border border-slate-700 hover:border-orange-400 transition-colors"
+                    className="group relative aspect-video rounded-xl overflow-hidden border border-slate-700 hover:border-orange-400 transition-colors bg-slate-800"
                   >
-                    <img
-                      src={actualThumbnail}
-                      alt={video.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      referrerPolicy="no-referrer"
-                    />
+                    {actualThumbnail ? (
+                      <img
+                        src={actualThumbnail}
+                        alt={video.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      // Fallback background if YouTube link is invalid
+                      <div className="w-full h-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+                        <Play className="w-8 h-8 text-orange-500/30 fill-orange-500/30" />
+                      </div>
+                    )}
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                       <Play className="w-8 h-8 text-white fill-white" />
                     </div>
@@ -201,7 +217,10 @@ export function CreatureCard({ creature, imageUrl }: CreatureCardProps) {
         )}
 
         {/* AR Button */}
-        <button className="w-full py-4 bg-orange-500 hover:bg-orange-400 text-slate-900 font-bold rounded-2xl transition-all active:scale-95 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(249,115,22,0.3)]">
+        <button 
+          onClick={handleARClick}
+          className="w-full py-4 bg-orange-500 hover:bg-orange-400 text-slate-900 font-bold rounded-2xl transition-all active:scale-95 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(249,115,22,0.3)]"
+        >
           <Eye className="w-5 h-5" />
           VIEW IN AR
         </button>
