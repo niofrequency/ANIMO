@@ -5,7 +5,6 @@ interface StatsChartProps {
   stats: CreatureStats;
 }
 
-// Custom Tooltip for the Radar Chart
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     return (
@@ -23,6 +22,7 @@ const CustomTooltip = ({ active, payload }: any) => {
 };
 
 export function StatsChart({ stats }: StatsChartProps) {
+  // Using CAMO to ensure the label fits comfortably, aligning with the UI below it
   const data = [
     { subject: 'AGGRESSION', value: stats.aggression, fullMark: 10 },
     { subject: 'CAMOUFLAGE', value: stats.camouflage, fullMark: 10 },
@@ -33,7 +33,8 @@ export function StatsChart({ stats }: StatsChartProps) {
   return (
     <div className="w-full h-56"> 
       <ResponsiveContainer width="100%" height="100%">
-        <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
+        {/* Added Margin and reduced outerRadius to 65% so the text isn't cut off */}
+        <RadarChart cx="50%" cy="50%" outerRadius="65%" margin={{ top: 10, right: 35, bottom: 10, left: 35 }} data={data}>
           <PolarGrid stroke="#fb923c" strokeOpacity={0.2} />
           <PolarAngleAxis 
             dataKey="subject" 
