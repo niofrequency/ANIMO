@@ -17,7 +17,6 @@ const rarityColors = {
   LEGENDARY: 'bg-yellow-500 text-black font-bold animate-pulse',
 };
 
-// Helper function to extract YouTube ID and get the official thumbnail
 const getYouTubeThumbnail = (url: string) => {
   if (!url) return null;
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -33,8 +32,6 @@ const getYouTubeThumbnail = (url: string) => {
 export function CreatureCard({ creature, imageUrl }: CreatureCardProps) {
   
   const handleARClick = () => {
-    // In a real native app, this would trigger ARKit/ARCore.
-    // For web, this would trigger <model-viewer> or WebXR.
     alert("AR View coming soon! This feature requires a 3D model of the creature and WebXR support.");
   };
 
@@ -44,11 +41,9 @@ export function CreatureCard({ creature, imageUrl }: CreatureCardProps) {
       animate={{ opacity: 1, y: 0 }}
       className="w-full max-w-md bg-slate-900/80 backdrop-blur-xl rounded-3xl overflow-hidden border border-slate-700 shadow-2xl relative"
     >
-      {/* Holographic Projection Area */}
       <div className="relative h-64 bg-gradient-to-b from-orange-900/20 to-slate-900 overflow-hidden group">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(249,115,22,0.1),transparent)]" />
         
-        {/* Animated Creature Image */}
         <motion.div
           animate={{ 
             y: [0, -10, 0],
@@ -69,13 +64,11 @@ export function CreatureCard({ creature, imageUrl }: CreatureCardProps) {
               className="w-48 h-48 object-cover rounded-full border-4 border-orange-400/30 shadow-[0_0_50px_rgba(249,115,22,0.3)] bg-slate-950/50"
               referrerPolicy="no-referrer"
             />
-            {/* Holographic Scan Lines Effect */}
             <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(transparent_0%,rgba(249,115,22,0.1)_50%,transparent_100%)] bg-[length:100%_4px] animate-scan rounded-full" />
             <div className="absolute -inset-4 border border-orange-400/20 rounded-full animate-ping-slow" />
           </div>
         </motion.div>
 
-        {/* Floating Particles */}
         {[...Array(10)].map((_, i) => (
           <motion.div
             key={i}
@@ -95,7 +88,6 @@ export function CreatureCard({ creature, imageUrl }: CreatureCardProps) {
         ))}
       </div>
 
-      {/* Content Section */}
       <div className="p-6 space-y-6">
         <div className="flex justify-between items-start">
           <div>
@@ -107,7 +99,6 @@ export function CreatureCard({ creature, imageUrl }: CreatureCardProps) {
           </span>
         </div>
 
-        {/* Ecology Info Grid */}
         <div className="grid grid-cols-3 gap-2">
           <div className="bg-slate-800/50 rounded-xl p-3 border border-slate-700/50 flex flex-col items-center justify-center text-center gap-1">
             <MapPin className="w-4 h-4 text-emerald-400" />
@@ -134,12 +125,9 @@ export function CreatureCard({ creature, imageUrl }: CreatureCardProps) {
           </p>
         </div>
 
-        {/* Stats Section - MOVED TO VERTICAL LAYOUT */}
         <div className="flex flex-col gap-6 bg-slate-950/50 rounded-2xl p-6 border border-slate-800">
-          {/* Chart takes top area full width */}
           <StatsChart stats={creature.stats} />
           
-          {/* Stats below the chart */}
           <div className="grid grid-cols-2 gap-y-4 gap-x-2">
             <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
               <Target className="w-4 h-4 text-red-400" />
@@ -172,7 +160,6 @@ export function CreatureCard({ creature, imageUrl }: CreatureCardProps) {
           </div>
         </div>
 
-        {/* YouTube Section */}
         {creature.videos && creature.videos.length > 0 && (
           <div className="space-y-3">
             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
@@ -198,7 +185,6 @@ export function CreatureCard({ creature, imageUrl }: CreatureCardProps) {
                         referrerPolicy="no-referrer"
                       />
                     ) : (
-                      // Fallback background if YouTube link is invalid
                       <div className="w-full h-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
                         <Play className="w-8 h-8 text-orange-500/30 fill-orange-500/30" />
                       </div>
@@ -216,7 +202,6 @@ export function CreatureCard({ creature, imageUrl }: CreatureCardProps) {
           </div>
         )}
 
-        {/* AR Button */}
         <button 
           onClick={handleARClick}
           className="w-full py-4 bg-orange-500 hover:bg-orange-400 text-slate-900 font-bold rounded-2xl transition-all active:scale-95 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(249,115,22,0.3)]"
